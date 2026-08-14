@@ -11,9 +11,15 @@
 
 ## С чего начать
 
+Одна команда в Терминале на Mac — скачает скрипт в папку с ключами и запустит:
+
 ```
-chmod +x mac-setup.sh && ./mac-setup.sh
+cd ~/Downloads/SERVER-MAC && curl -fsSL https://raw.githubusercontent.com/bondarenky-star/151eye/cursor/restore-ssh-access-vscode-96cf/server-access/mac-setup.sh -o mac-setup.sh && chmod +x mac-setup.sh && ./mac-setup.sh
 ```
+
+Важно запускать именно из папки распакованного архива: рядом должна лежать
+папка `keys/` с ключом `do-agents`. Если архив распакован в другое место —
+подставьте свой путь вместо `~/Downloads/SERVER-MAC`.
 
 Скрипт сам скажет, что делать дальше. Если он попросит починить сервер —
 откройте `DIAGNOSTIKA.md`, шаг 2.

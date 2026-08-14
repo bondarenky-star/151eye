@@ -9,11 +9,20 @@
 
 ### Шаг 1. Запустить диагностику на Mac
 
-Откройте Терминал, перейдите в папку с этими файлами и выполните:
+Откройте Терминал и вставьте одну команду — она скачает скрипт в папку
+с ключами и сразу запустит его:
 
 ```
-chmod +x mac-setup.sh && ./mac-setup.sh
+cd ~/Downloads/SERVER-MAC && curl -fsSL https://raw.githubusercontent.com/bondarenky-star/151eye/cursor/restore-ssh-access-vscode-96cf/server-access/mac-setup.sh -o mac-setup.sh && chmod +x mac-setup.sh && ./mac-setup.sh
 ```
+
+Запускать нужно из папки распакованного архива — рядом должна быть папка
+`keys/` с ключом `do-agents`. Если `cd` ругается `No such file or directory`,
+значит архив распакован в другое место: найдите папку `SERVER-MAC` в Finder
+и подставьте её путь.
+
+Ошибка `chmod: mac-setup.sh: No such file or directory` означает ровно одно —
+скрипт ещё не скачан в текущую папку. Команда выше это и делает.
 
 Скрипт сам проверит порты 22, 443 и 2222, поймёт, кто виноват — сервер
 или ваша сеть, — пропишет рабочий порт в `~/.ssh/config` и настроит VS Code.
