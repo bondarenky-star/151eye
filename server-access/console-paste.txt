@@ -1,0 +1,42 @@
+Короткий вариант ремонта — на случай, если скачать server-repair.sh на сервер
+неоткуда. Открываете DigitalOcean → дроплет agents-... → Access → Launch Web
+Console, входите как root и вставляете блок целиком (Web Console вставляет
+медленно, это нормально — дождитесь, пока пройдут все строки).
+
+--------------------------- КОПИРОВАТЬ ОТСЮДА ---------------------------
+mkdir -p /etc/ssh/sshd_config.d
+cp /etc/ssh/sshd_config /etc/ssh/sshd_config.bak
+sed -i -E 's/^[[:space:]]*(Port[[:space:]])/#\1/' /etc/ssh/sshd_config /etc/ssh/sshd_config.d/*.conf 2>/dev/null
+printf 'Port 22\nPort 443\nPubkeyAuthentication yes\n' > /etc/ssh/sshd_config.d/10-ports.conf
+grep -q 'sshd_config.d' /etc/ssh/sshd_config || sed -i '1i Include /etc/ssh/sshd_config.d/*.conf' /etc/ssh/sshd_config
+mkdir -p /home/admin/.ssh
+grep -q 'DK+pPutPNMQJgJz7yQooYCTMGa' /home/admin/.ssh/authorized_keys 2>/dev/null || echo 'ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDK+pPutPNMQJgJz7yQooYCTMGa/9Tb+VAOHx54pntrA arsen-do-vps' >> /home/admin/.ssh/authorized_keys
+grep -q 'HFIkUA1oTsfCs04tpL9PUKIxuZvNryh8Wpi' /home/admin/.ssh/authorized_keys 2>/dev/null || echo 'ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIHFIkUA1oTsfCs04tpL9PUKIxuZvNryh8WpiQPj9k9sG Mars' >> /home/admin/.ssh/authorized_keys
+chown -R admin:admin /home/admin/.ssh; chmod 700 /home/admin/.ssh; chmod 600 /home/admin/.ssh/authorized_keys
+sshd -t && echo CONFIG-OK || echo CONFIG-BROKEN
+systemctl stop ssh.socket 2>/dev/null; systemctl disable ssh.socket 2>/dev/null
+systemctl unmask ssh.service 2>/dev/null; systemctl enable ssh.service 2>/dev/null
+systemctl restart ssh.service && echo SSHD-RESTARTED
+ufw allow 22/tcp; ufw allow 443/tcp
+fail2ban-client unban --all 2>/dev/null; echo BANS-CLEARED
+ss -tln | grep -E ':(22|443)\b'
+---------------------------- ДО ЭТОЙ СТРОКИ -----------------------------
+
+Что должно быть в конце вывода — две строки вида:
+
+    LISTEN 0 128 0.0.0.0:22   0.0.0.0:*
+    LISTEN 0 128 0.0.0.0:443  0.0.0.0:*
+
+Если обе есть — сервер готов. Возвращайтесь на Mac и запускайте mac-setup.sh.
+
+Если вместо CONFIG-OK написано CONFIG-BROKEN — в конфиге sshd осталась ошибка
+от прошлых правок. Посмотрите, что именно, командой:
+
+    sshd -t
+
+и покажите вывод.
+
+Почему именно так, а не просто «дописать Port 443»: в Ubuntu 24.04 sshd
+по умолчанию запускается через ssh.socket, и в этом режиме порты берутся
+из настроек сокета, а строки Port в sshd_config молча игнорируются.
+Поэтому socket-активацию здесь отключаем и запускаем sshd обычной службой.
