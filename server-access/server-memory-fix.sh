@@ -96,7 +96,8 @@ if command -v earlyoom >/dev/null 2>&1; then
   printf '%s\n' \
     '# Вмешиваться, когда свободной памяти меньше 8% и свапа меньше 10%.' \
     '# Первыми под нож идут серверные части редакторов, sshd защищён.' \
-    'EARLYOOM_ARGS="-m 8 -s 10 --avoid ^(sshd|systemd|tmux.*|bash|claude)$ --prefer ^(node|MainThread|obsidian)$"' \
+    '# -r 300: отчёт в журнал раз в 5 минут, иначе earlyoom пишет каждую секунду.' \
+    'EARLYOOM_ARGS="-m 8 -s 10 -r 300 --avoid ^(sshd|systemd|tmux.*|bash|claude)$ --prefer ^(node|MainThread|obsidian)$"' \
     | sudo tee /etc/default/earlyoom >/dev/null
   sudo systemctl enable --now earlyoom >/dev/null 2>&1
   sudo systemctl restart earlyoom >/dev/null 2>&1
